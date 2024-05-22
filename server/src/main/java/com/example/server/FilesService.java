@@ -41,4 +41,22 @@ public class FilesService {
 
         return fileNames;
     }
+//
+//    public static void deleteFile(String fileName){
+//        File file = new File("files/" + fileName);
+//        if (file.exists()) {
+//            file.delete();
+//            return;
+//        }
+//
+//    }
+//
+//    public static editFile(String fileName){
+//        File file = new File("files/" + fileName);
+//        if (file.exists()) {
+//            file.replace(fileName ()=> fileName = fileName)
+//        }
+//    }
+
+
 }

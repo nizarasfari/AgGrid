@@ -1,9 +1,11 @@
-import { Component } from '@angular/core';
+import { Component,OnInit } from '@angular/core';
 import { AgGridAngular } from 'ag-grid-angular'; // Angular Data Grid Component
 import { ColDef } from 'ag-grid-community'; // Column Definition Type Interface
 import 'ag-grid-community/styles/ag-grid.css';
 /* Quartz Theme Specific CSS */
 import 'ag-grid-community/styles/ag-theme-quartz.css';
+
+import { FileService } from './file.service';
 
 
 
@@ -21,20 +23,28 @@ import 'ag-grid-community/styles/ag-theme-quartz.css';
 </ag-grid-angular>`
  })
  
- export class AppComponent {
-  // Row Data: The data to be displayed.
-  rowData = [
-    { make: "Tesla", model: "Model Y", price: 64950, electric: true },
-    { make: "Ford", model: "F-Series", price: 33850, electric: false },
-    { make: "Toyota", model: "Corolla", price: 29600, electric: false },
-  ];
- 
-  // Column Definitions: Defines the columns to be displayed.
+ export class AppComponent implements OnInit{
+  rowData: any[] = [];
   colDefs: ColDef[] = [
-    { field: "make" },
-    { field: "model" },
-    { field: "price" },
-    { field: "electric" }
+    { field: "fileName", headerName: "File Name" }
   ];
+
+  constructor(private fileService: FileService) { }
+
+  ngOnInit(): void {
+    this.loadFiles();
+  }
+
+  loadFiles(): void {
+    this.fileService.getFiles().subscribe(
+      data => {
+        this.rowData = data.map(fileName => ({fileName}))
+        console.log('Files fetched', this.rowData);
+      },
+      error => {
+        console.error('Error fetching files', error);
+      }
+    );
+  }
  }
  
