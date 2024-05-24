@@ -6,42 +6,54 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
-import com.example.server.FilesService;
+import com.example.server.PersonService;
+import com.example.server.PersonClass;
+
+
 import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.util.ArrayList;
 import java.util.List;
 
+
+class PersonPage {
+    private List<PersonClass> person;
+    private int totalPersons;
+
+    public PersonPage(List<PersonClass> person, int totalPersons) {
+        this.person = person;
+        this.totalPersons = totalPersons;
+    }
+
+    public List<PersonClass> getPerson() {
+        return person;
+    }
+
+    public int getTotalPersons() {
+        return totalPersons;
+    }
+}
+
 @RestController
 public class HomeController {
     @CrossOrigin(origins = "http://localhost:4200")
-    @PostMapping("/createFile")
-    public ResponseEntity<String> createFile(@RequestParam String fileName, @RequestParam  String fileExtension ){
-        String file = fileName+"."+fileExtension;
-        try {
-            FilesService.createFile(file);
-            return  ResponseEntity.ok("file created" + file);
 
-        }catch (Exception e){
-            if (e.getMessage().contains("File already exists")) {
-                return ResponseEntity.status(409).body("File already exists.");
-            } else {
-                return ResponseEntity.status(500).body("An error occurred: " + e.getMessage());
-            }
-        }
-    }
 
-    @GetMapping("/list/files")
-    public ResponseEntity<List<String>> listFiles() {
+    @GetMapping("/list/persons")
+    @ResponseBody
+    public ResponseEntity<PersonPage> listPersons(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         try {
-            List<String> fileNames = FilesService.listFiles();
-            return ResponseEntity.ok(fileNames);
+            List<PersonClass> personList = PersonService.listPersons(page, size);
+            int totalRows = 500;
+            PersonPage personPage = new PersonPage(personList,totalRows);
+            return  ResponseEntity.ok(personPage);
         } catch (Exception e) {
+            e.printStackTrace();
+
+            System.out.println("Error occurred: " + e.getMessage());
             return ResponseEntity.status(500).body(null);
         }
     }
-
-
 
     @GetMapping("/")
     @ResponseBody

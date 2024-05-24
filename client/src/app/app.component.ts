@@ -1,50 +1,59 @@
-import { Component,OnInit } from '@angular/core';
-import { AgGridAngular } from 'ag-grid-angular'; // Angular Data Grid Component
-import { ColDef } from 'ag-grid-community'; // Column Definition Type Interface
+import { Component } from '@angular/core';
+import { HttpClientModule } from '@angular/common/http';
+import { CommonModule } from '@angular/common';
+import { AgGridModule } from 'ag-grid-angular';
+import { FileService } from './file.service';
 import 'ag-grid-community/styles/ag-grid.css';
 /* Quartz Theme Specific CSS */
 import 'ag-grid-community/styles/ag-theme-quartz.css';
-
-import { FileService } from './file.service';
-
-
-
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [AgGridAngular], // Add Angular Data Grid Component
-  styleUrls: ['./app.component.css'],
-  template: `
-  <ag-grid-angular
+  imports: [CommonModule, HttpClientModule, AgGridModule],
+  providers: [FileService],
+  template: `<ag-grid-angular
+  style="width: 100%; height: 600px;"
   class="ag-theme-quartz"
- style="height: 500px;"
   [rowData]="rowData"
-  [columnDefs]="colDefs">
-</ag-grid-angular>`
- })
- 
- export class AppComponent implements OnInit{
+  [columnDefs]="columnDefs"
+  [pagination]="true"
+  [paginationPageSize]="paginationPageSize"
+  [rowModelType]="'infinite'"
+  [cacheBlockSize]="paginationPageSize"
+  [maxBlocksInCache]="maxBlocksInCache"
+  (gridReady)="onGridReady($event)">
+</ag-grid-angular>`,
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
   rowData: any[] = [];
-  colDefs: ColDef[] = [
-    { field: "fileName", headerName: "File Name" }
+  columnDefs = [
+    { field: 'id', headerName: 'ID' },
+    { field: 'email', headerName: 'Email' },
+    { field: 'gender', headerName: 'Gender' },
+    { field: 'company', headerName: 'Company' },
+    { field: 'first_name', headerName: 'First Name' },
+    { field: 'last_name', headerName: 'Last Name' }
   ];
+  paginationPageSize = 5;
+  maxBlocksInCache = 5;
 
-  constructor(private fileService: FileService) { }
+  constructor(private fileService: FileService) {}
 
-  ngOnInit(): void {
-    this.loadFiles();
+  onGridReady(params: any) {
+    params.api.setDatasource(this.createDataSource());
   }
 
-  loadFiles(): void {
-    this.fileService.getFiles().subscribe(
-      data => {
-        this.rowData = data.map(fileName => ({fileName}))
-        console.log('Files fetched', this.rowData);
-      },
-      error => {
-        console.error('Error fetching files', error);
+  createDataSource() {
+    return {
+      getRows: (params: any) => {
+        const page = params.startRow / this.paginationPageSize;
+        this.fileService.getFiles(page, this.paginationPageSize).subscribe(data => {
+          params.successCallback(data.person, data.totalPersons);
+        }, error => {
+          params.failCallback();
+        });
       }
-    );
+    };
   }
- }
- 
+}
